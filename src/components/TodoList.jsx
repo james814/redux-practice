@@ -1,44 +1,21 @@
 import React, { Component } from 'react';
+import { connect } from 'react-redux'
 
-import { addTodo, changeTodoInput, changeSearchInput } from './../actions/todoActions';
-import store from '../store/store.js'
+import { addTodo, resetTodo, changeTodoInput, changeSearchInput } from './../actions/todoActions';
 
 class TodoList extends Component {
-  constructor(props) {
-    super(props);
-    let state = store.getState();
-    this.state = {
-      todos: state.todos.list,
-      todoInputText: state.todos.todo,
-      searchInputText: state.search
-    }
-    this.handleSearchInput = this.handleSearchInput.bind(this)
-    this.handleTodoInput = this.handleTodoInput.bind(this)
-    this.handleClick = this.handleClick.bind(this)
-  }
-  componentDidMount() {
-    store.subscribe(() => {
-      let state = store.getState();
-      this.setState({
-        todos: state.todos.list,
-        todoInputText: state.todos.todo,
-        searchInputText: state.search
-      })
-    })
-  }
-  handleSearchInput(e) {
-    store.dispatch(changeSearchInput(e.target.value))
-  }
-  handleTodoInput(e) {
-    store.dispatch(changeTodoInput(e.target.value))
-  }
-  handleClick() {
-    store.dispatch(addTodo(this.state.todoInputText))
-    store.dispatch(changeTodoInput(''))
-  }
   render() {
-    const todoList = this.state.todos.map((ele, idx) => {
-      if (ele.includes(this.state.searchInputText)) {
+    const {
+      todos,
+      searchInputText,
+      todoInputText,
+      handleSearchInput,
+      handleTodoInput,
+      handleAddClick,
+      handleResetClick
+    } = this.props
+    const todoList = todos.map((ele, idx) => {
+      if (ele.includes(searchInputText)) {
         return <li key={idx}>{ele}</li>
       }
     })
@@ -47,22 +24,28 @@ class TodoList extends Component {
         <p>Search:</p>
         <input
           type="text"
-          value={this.state.searchInputText}
-          onChange={this.handleSearchInput}
+          value={searchInputText}
+          onChange={(e) => handleSearchInput(e.target.value)}
         />
         <br />
         <p>New Todo:</p>
         <input
           type="text"
-          value={this.state.todoInputText}
-          onChange={this.handleTodoInput}
+          value={todoInputText}
+          onChange={(e) => handleTodoInput(e.target.value)}
         />
         <br />
         <button
           type="button"
-          onClick={this.handleClick}
+          onClick={() => handleAddClick(todoInputText)}
         >
           Add
+        </button>
+        <button
+          type="button"
+          onClick={() => handleResetClick()}
+        >
+          Reset
         </button>
         <ul>{todoList}</ul>
       </div>
@@ -70,4 +53,33 @@ class TodoList extends Component {
   }
 }
 
-export default TodoList;
+const mapStateToProps = (state) => {
+  return {
+    todos: state.todos.list,
+    todoInputText: state.todos.todo,
+    searchInputText: state.search
+  }
+}
+
+const mapDispatchToProps = (dispatch) => {
+  return {
+    handleSearchInput: (text) => {
+      dispatch(changeSearchInput(text))
+    },
+    handleTodoInput: (text) => {
+      dispatch(changeTodoInput(text))
+    },
+    handleAddClick: (text) => {
+      dispatch(addTodo(text))
+      dispatch(changeTodoInput(''))
+    },
+    handleResetClick: () => {
+      dispatch(resetTodo())
+    }
+  }
+}
+
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps
+)(TodoList);

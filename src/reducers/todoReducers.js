@@ -1,5 +1,6 @@
 import {
   ADD_TODO,
+  RESET_TODO,
   CHANGE_TODO_INPUT
 } from '../actions/todoActions';
 
@@ -15,6 +16,12 @@ const todos = (state = initialState, action) => {
         ...state,
         list: [...state.list, action.text]
       }
+      
+    case RESET_TODO:
+    return {
+      ...state,
+      list: []
+    }
 
     case CHANGE_TODO_INPUT:
       return {
